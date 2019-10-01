@@ -1,0 +1,71 @@
+package com.tenor.tsf.dao.services;
+
+import java.util.List;
+import java.util.Optional;
+import org.apache.commons.lang3.Validate;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import com.tenor.tsf.Repository.SalleRepository;
+import com.tenor.tsf.dao.entity.Salle;
+import com.tenor.tsf.dao.exceptions.SalleException;
+import lombok.extern.log4j.Log4j2;
+
+@Log4j2
+@Service
+public class SalleService {
+
+	@Autowired
+	SalleRepository salleRepository;
+
+	public List<Salle> findAll() {
+		return (List<Salle>) salleRepository.findAll();
+	}
+
+	public Salle createSalle(Salle salle) throws SalleException {
+		Validate.notNull(salle, "Salle cannot be null!");
+		log.info("Create: "+salle);
+		if (salle.getLibelle() == null) {
+			throw new SalleException("The field libelle cannot be null!");
+		} else if(salle.getCapacite()==null) {
+			throw new SalleException("the field capacite cannot be null!");
+		}else {
+			return salleRepository.save(salle);
+		}
+	}
+
+	public Salle updateSalle(Salle salle) throws SalleException {
+		Validate.notNull(salle, "Salle cannot be null!");
+		log.info("Update: "+salle);
+		if (salle.getLibelle() == null) {
+			throw new SalleException("The field libelle cannot be null!");
+		} else if(salle.getCapacite()==null) {
+			throw new SalleException("the field capacite cannot be null!");
+		}else if (!salleRepository.findById(salle.getId()).isPresent()) {
+			throw new SalleException("Salle not found!");
+		} else {
+			return salleRepository.save(salle);
+		}
+	}
+
+	public void deleteSalle(Long id) throws SalleException {
+		Validate.notNull(id, "Id cannot be null!");
+		log.info("Delete: "+id);
+		if(!salleRepository.findById(id).isPresent()) {
+			throw new SalleException("Salle not found!");
+		}else {
+			salleRepository.deleteById(id);
+		}
+	}
+
+	public Optional<Salle> getById(Long id) {
+		log.info("getById: "+id);
+		return salleRepository.findById(id);
+	}
+
+	public Salle getBySalle(Salle salle) {
+		log.info("getBySalle: "+salle);
+		salle = salleRepository.findById(salle.getId()).get();
+		return salle;
+	}
+
+}
