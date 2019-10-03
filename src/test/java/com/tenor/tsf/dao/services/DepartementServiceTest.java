@@ -10,7 +10,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import com.tenor.tsf.dao.entity.Departement;
-import com.tenor.tsf.dao.exceptions.DepartementException;
+import com.tenor.tsf.dao.exceptions.FieldNullException;
+import com.tenor.tsf.dao.exceptions.NoContentException;
+import com.tenor.tsf.dao.exceptions.NotFoundException;
+
 import lombok.extern.log4j.Log4j2;
 
 @SpringBootTest
@@ -24,12 +27,12 @@ public class DepartementServiceTest {
 	DepartementService departementService ;
 	
 	@Test
-	public void testfindAll() {
+	public void testfindAll() throws NoContentException {
 		departementService.findAll();
 	}
 
 	@Test
-	public void testCreatedepartement() throws DepartementException {
+	public void testCreatedepartement() throws FieldNullException {
 		departement.setNom("Departement 1");
 		log.info("Test Create : " +departement);
 		 Departement departement1 = departementService.createDepartement(departement);
@@ -38,8 +41,8 @@ public class DepartementServiceTest {
 	}
 	
 	//Exception name of departement null
-	@Test(expected=DepartementException.class)
-	public void testCreateExceptionNomNull() throws DepartementException {
+	@Test(expected=FieldNullException.class)
+	public void testCreateExceptionNomNull() throws FieldNullException {
 		log.info("Test Ko Create : "+departement);
 		departement.setNom("");
 		departementService.createDepartement(departement);
@@ -49,7 +52,7 @@ public class DepartementServiceTest {
 	}
 
 	@Test
-	public void testUpdateDepartement() throws DepartementException {
+	public void testUpdateDepartement() throws FieldNullException, NotFoundException {
 		departement.setId(21L);
 		departement.setNom("Departement 2");
 		log.info("Test Update: "+departement);
@@ -59,8 +62,8 @@ public class DepartementServiceTest {
 	}
 	
 	//Exception Id not found
-	@Test(expected=DepartementException.class)
-	public void testUpdateExceptionId() throws DepartementException {
+	@Test(expected=NotFoundException.class)
+	public void testUpdateExceptionId() throws FieldNullException, NotFoundException {
 		departement.setId(55L);
 		departement.setNom("Departement 2");
 		log.info("Test Ko Update:"+departement);
@@ -70,7 +73,7 @@ public class DepartementServiceTest {
 	}
 
 	@Test
-	public void testDeleteDepartement() throws DepartementException {
+	public void testDeleteDepartement() throws NotFoundException {
 		departement.setId(22L);
 		Long id = departement.getId();
 		departementService.deleteDepartement(id);
@@ -79,8 +82,8 @@ public class DepartementServiceTest {
 	}
 	
 	//Exception Id not found
-	@Test(expected=DepartementException.class)
-	public void testDeleteExceptionId() throws DepartementException {
+	@Test(expected=NotFoundException.class)
+	public void testDeleteExceptionId() throws NotFoundException {
 		departement.setId(5L);
 		Long id = departement.getId();
 		departementService.deleteDepartement(id);

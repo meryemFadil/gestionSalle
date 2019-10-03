@@ -12,7 +12,9 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import com.tenor.tsf.dao.entity.Reservation;
 import com.tenor.tsf.dao.entity.Salle;
 import com.tenor.tsf.dao.entity.User;
-import com.tenor.tsf.dao.exceptions.ReservationException;
+import com.tenor.tsf.dao.exceptions.BadRequestException;
+import com.tenor.tsf.dao.exceptions.NoContentException;
+import com.tenor.tsf.dao.exceptions.NotFoundException;
 
 @SpringBootTest
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -29,12 +31,12 @@ public class ReservationServicesTest {
 	LocalTime heureFin = LocalTime.of(20, 00);
 
 	@Test
-	public void testfindAll() throws ReservationException {
+	public void testfindAll() throws NoContentException {
 		reservationService.findAll();
 	}
 
 	@Test
-	public void testCreateReservation() throws ReservationException {
+	public void testCreateReservation() throws BadRequestException, NotFoundException {
 		salle.setId(20L);
 		user.setId(12L);
 		reservation.setNom("nom 1");
@@ -49,8 +51,8 @@ public class ReservationServicesTest {
 	}
 
 	// Exception Date
-	@Test(expected = ReservationException.class)
-	public void testCreateExceptionDate() throws ReservationException {
+	@Test(expected = BadRequestException.class)
+	public void testCreateExceptionDate() throws BadRequestException, NotFoundException {
 		LocalDate date1 = LocalDate.of(2019, 9, 22);
 		salle.setId(20L);
 		user.setId(12L);
@@ -66,8 +68,8 @@ public class ReservationServicesTest {
 	}
 
 	// Exception heure de fin est moins de heure de début
-	@Test(expected = ReservationException.class)
-	public void testCreateExceptionheure() throws ReservationException {
+	@Test(expected = BadRequestException.class)
+	public void testCreateExceptionheure() throws BadRequestException, NotFoundException {
 		LocalTime heureDeb1 = LocalTime.of(22, 00);
 		LocalTime heureFin1 = LocalTime.of(18, 00);
 		salle.setId(20L);
@@ -84,8 +86,8 @@ public class ReservationServicesTest {
 	}
 
 	// Exception Id Salle not found
-	@Test(expected = ReservationException.class)
-	public void testCreateExceptionIdSalle() throws ReservationException {
+	@Test(expected = NotFoundException.class)
+	public void testCreateExceptionIdSalle() throws BadRequestException, NotFoundException {
 		salle.setId(100L);
 		user.setId(12L);
 		reservation.setNom("nom 1");
@@ -100,8 +102,8 @@ public class ReservationServicesTest {
 	}
 
 	// Exception Id User not found
-	@Test(expected = ReservationException.class)
-	public void testCreateExceptionIdUser() throws ReservationException {
+	@Test(expected = NotFoundException.class)
+	public void testCreateExceptionIdUser() throws BadRequestException, NotFoundException {
 		salle.setId(20L);
 		user.setId(100L);
 		reservation.setNom("nom 1");
@@ -116,7 +118,7 @@ public class ReservationServicesTest {
 	}
 
 	@Test
-	public void testUpdateReservation() throws ReservationException {
+	public void testUpdateReservation() throws NotFoundException, BadRequestException {
 		salle.setId(20L);
 		user.setId(12L);
 		reservation.setId(4L);
@@ -133,8 +135,8 @@ public class ReservationServicesTest {
 	}
 	
 	//Exception Id Reservation not found
-	@Test(expected = ReservationException.class)
-	public void nottestUpdateReservation() throws ReservationException {
+	@Test(expected = NotFoundException.class)
+	public void nottestUpdateReservation() throws NotFoundException, BadRequestException {
 		salle.setId(20L);
 		user.setId(12L);
 		reservation.setId(100L);
@@ -151,7 +153,7 @@ public class ReservationServicesTest {
 	}
 
 	@Test
-	public void testDeleteReservation() throws ReservationException {
+	public void testDeleteReservation() throws NotFoundException {
 		reservation.setId(3L);
 		Long id = reservation.getId();
 		reservationService.deleteReservation(id);
@@ -160,8 +162,8 @@ public class ReservationServicesTest {
 	}
 
 	// Exception Id not found
-	@Test(expected = ReservationException.class)
-	public void testDeleteExceptionId() throws ReservationException {
+	@Test(expected = NotFoundException.class)
+	public void testDeleteExceptionId() throws NotFoundException {
 		reservation.setId(56L);
 		Long id = reservation.getId();
 		reservationService.deleteReservation(id);

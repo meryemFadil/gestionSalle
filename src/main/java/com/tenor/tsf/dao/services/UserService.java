@@ -7,8 +7,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.tenor.tsf.Repository.DepartementRepository;
 import com.tenor.tsf.Repository.UserRepository;
+import com.tenor.tsf.dao.entity.Departement;
 import com.tenor.tsf.dao.entity.User;
-import com.tenor.tsf.dao.exceptions.UserException;
+import com.tenor.tsf.dao.exceptions.FieldNullException;
+import com.tenor.tsf.dao.exceptions.NoContentException;
+import com.tenor.tsf.dao.exceptions.NotFoundException;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -21,57 +24,60 @@ public class UserService {
 	@Autowired
 	DepartementRepository departementRepository;
 
-	public List<User> findAll() {
+	public List<User> findAll() throws NoContentException {
 		return (List<User>) userRepository.findAll();
 	}
 
-	public User createUser(User user) throws UserException {
+	public User createUser(User user) throws FieldNullException, NotFoundException {
 		Validate.notNull(user, "User cannot be null!");
 		log.info("Create: "+user);
+		Optional<Departement> departementFindById = departementRepository.findById(user.getDepartement().getId());
 		if (user.getNom() == null) {
-			throw new UserException("field lastname cannot be null!");
+			throw new FieldNullException("field lastname cannot be null!");
 		} else if (user.getPrenom() == null) {
-			throw new UserException("field name cannot be null!");
+			throw new FieldNullException("field name cannot be null!");
 		} else if (user.getEmail() == null) {
-			throw new UserException("the field email cannot be null!");
+			throw new FieldNullException("the field email cannot be null!");
 		} else if (user.getLogin() == null) {
-			throw new UserException("the field login cannot be null!");
+			throw new FieldNullException("the field login cannot be null!");
 		} else if (user.getPassword() == null) {
-			throw new UserException("the field password cannot be null!");
-		} else if (!departementRepository.findById(user.getDepartement().getId()).isPresent()) {
-			throw new UserException("Departement not found");
+			throw new FieldNullException("the field password cannot be null!");
+		} else if (!departementFindById.isPresent()) {
+			throw new NotFoundException("Departement not found");
 		} else {
 			return userRepository.save(user);
 		}
 	}
 
-	public User updateUser(User user) throws UserException {
+	public User updateUser(User user) throws NotFoundException, FieldNullException {
 		Validate.notNull(user, "User cannot be null!");
 		log.info("update: "+user);
+		Optional<Departement> departementFindById = departementRepository.findById(user.getDepartement().getId());
 		if (user.getNom() == null) {
-			throw new UserException("field lastname cannot be null!");
+			throw new FieldNullException("field lastname cannot be null!");
 		} else if (user.getPrenom() == null) {
-			throw new UserException("field name cannot be null!");
+			throw new FieldNullException("field name cannot be null!");
 		} else if (user.getEmail() == null) {
-			throw new UserException("the field email cannot be null!");
+			throw new FieldNullException("the field email cannot be null!");
 		} else if (user.getLogin() == null) {
-			throw new UserException("the field login cannot be null!");
+			throw new FieldNullException("the field login cannot be null!");
 		} else if (user.getPassword() == null) {
-			throw new UserException("the field password cannot be null!");
+			throw new FieldNullException("the field password cannot be null!");
 		} else if (!userRepository.findById(user.getId()).isPresent()) {
-			throw new UserException("User not found!");
-		} else if (!departementRepository.findById(user.getDepartement().getId()).isPresent()) {
-			throw new UserException("Departement not found");
+			throw new NotFoundException("User not found!");
+		} else if (!departementFindById.isPresent()) {
+			throw new NotFoundException("Departement not found");
 		} else {
 			return userRepository.save(user);
 		}
 	}
 
-	public void deleteUser(Long id) throws UserException {
+	public void deleteUser(Long id) throws NotFoundException {
 		Validate.notNull(id, "L'id cannot be null");
 		log.info("Delete: "+id);
-		if (!userRepository.findById(id).isPresent()) {
-			throw new UserException("User not found!");
+		Optional<User> userFindById = userRepository.findById(id);
+		if (!userFindById.isPresent()) {
+			throw new NotFoundException("User not found!");
 		} else {
 			userRepository.deleteById(id);
 		}

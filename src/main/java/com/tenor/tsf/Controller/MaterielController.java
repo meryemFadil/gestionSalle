@@ -13,7 +13,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.tenor.tsf.dao.entity.Materiel;
-import com.tenor.tsf.dao.exceptions.MaterielException;
+import com.tenor.tsf.dao.exceptions.FieldNullException;
+import com.tenor.tsf.dao.exceptions.NoContentException;
+import com.tenor.tsf.dao.exceptions.NotFoundException;
 import com.tenor.tsf.dao.services.MaterielService;
 
 @RestController
@@ -24,47 +26,33 @@ public class MaterielController {
 	private MaterielService materielService;
 
 	@GetMapping(value = { "/materiels" }, produces = "application/json")
-	public ResponseEntity<List<Materiel>> getMateriels() {
+	public ResponseEntity<List<Materiel>> getMateriels() throws NoContentException {
 		List<Materiel> materiels = materielService.findAll();
 		if (materiels.isEmpty()) {
-			return new ResponseEntity<List<Materiel>>(HttpStatus.NOT_FOUND);
+			return new ResponseEntity<List<Materiel>>(HttpStatus.NO_CONTENT);
 		} else {
-			return new ResponseEntity<List<Materiel>>(materielService.findAll(), HttpStatus.OK);
+			return new ResponseEntity<List<Materiel>>(materiels, HttpStatus.OK);
 		}
 	}
 
 	@PostMapping("/create")
 	public ResponseEntity<Materiel> createMateriel(@RequestBody Materiel materiel)
-			throws MaterielException {
-		try {
-			materielService.createMateriel(materiel);
-		} catch (Exception e) {
-			return new ResponseEntity<Materiel>(HttpStatus.NOT_IMPLEMENTED);
-		}
-		return new ResponseEntity<Materiel>(HttpStatus.CREATED);
+			throws NotFoundException, FieldNullException {
+			Materiel result = materielService.createMateriel(materiel);
+		return new ResponseEntity<Materiel>(result,HttpStatus.CREATED);
 	}
 
 	@PutMapping("/update/{id}")
-	public ResponseEntity<Materiel> updateMateriel
-	(@RequestBody Materiel materiel, @PathVariable Long id)
-			throws MaterielException {
-		try {
-			materielService.updateMateriel(materiel);
-		} catch (Exception e) {
-			return new ResponseEntity<Materiel>(HttpStatus.NOT_FOUND);
-		}
-		return new ResponseEntity<Materiel>(HttpStatus.OK);
+	public ResponseEntity<Materiel> updateMateriel(@RequestBody Materiel materiel)
+			throws FieldNullException, NotFoundException {
+			Materiel result = materielService.updateMateriel(materiel);
+		return new ResponseEntity<Materiel>(result,HttpStatus.OK);
 	}
 
 	@DeleteMapping("/delete/{id}")
 	public ResponseEntity<Materiel> deleteMateriel(@PathVariable Long id) 
-			throws MaterielException {
-		materielService.getById(id);
-		try {
+			throws NotFoundException {
 			materielService.deleteMateriel(id);
-		} catch (Exception e) {
-			return new ResponseEntity<Materiel>(HttpStatus.NOT_FOUND);
-		}
 		return new ResponseEntity<Materiel>(HttpStatus.OK);
 	}
 

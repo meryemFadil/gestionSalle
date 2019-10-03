@@ -13,7 +13,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.tenor.tsf.dao.entity.Reclamation;
-import com.tenor.tsf.dao.exceptions.ReclamationException;
+import com.tenor.tsf.dao.exceptions.BadRequestException;
+import com.tenor.tsf.dao.exceptions.FieldNullException;
+import com.tenor.tsf.dao.exceptions.NoContentException;
+import com.tenor.tsf.dao.exceptions.NotFoundException;
 import com.tenor.tsf.dao.services.ReclamationService;
 
 @RestController
@@ -24,48 +27,34 @@ public class reclamationController {
 	private ReclamationService reclamationService;
 
 	@GetMapping(value = { "/reclamations" }, produces = "application/json")
-	public ResponseEntity<List<Reclamation>> getReclamations() {
-		try {
-			reclamationService.findAll();
-		}catch(Exception e) {
-			return new ResponseEntity<List<Reclamation>>(HttpStatus.NOT_FOUND);
+	public ResponseEntity<List<Reclamation>> getReclamations() throws NoContentException {
+		
+			List<Reclamation> reclamations = reclamationService.findAll();
+		if(reclamations.isEmpty()) {
+			return new ResponseEntity<List<Reclamation>>(HttpStatus.NO_CONTENT);
+		}else {
+			return new ResponseEntity<List<Reclamation>>(reclamations, HttpStatus.OK);
 		}
-		return new ResponseEntity<List<Reclamation>>(reclamationService.findAll(), 
-				HttpStatus.OK);
 	}
 
 	@PostMapping("/create")
 	public ResponseEntity<Reclamation> createReclamation(@RequestBody Reclamation reclamation)
-			throws ReclamationException {
-		try {
-			reclamationService.createReclamation(reclamation);
-		} catch (Exception e) {
-			return new ResponseEntity<Reclamation>(HttpStatus.NOT_IMPLEMENTED);
-		}
-		return new ResponseEntity<Reclamation>(HttpStatus.CREATED);
+			throws FieldNullException, NotFoundException, BadRequestException {
+			Reclamation result = reclamationService.createReclamation(reclamation);
+		return new ResponseEntity<Reclamation>(result,HttpStatus.CREATED);
 	}
 
 	@PutMapping("/update/{id}")
-	public ResponseEntity<Reclamation> updateReclamation
-	(@RequestBody Reclamation reclamation, @PathVariable Long id)
-			throws ReclamationException {
-		try {
-			reclamationService.updateReclamation(reclamation);
-		} catch (Exception e) {
-			return new ResponseEntity<Reclamation>(HttpStatus.NOT_FOUND);
-		}
-		return new ResponseEntity<Reclamation>(HttpStatus.OK);
+	public ResponseEntity<Reclamation> updateReclamation(@RequestBody Reclamation reclamation)
+			throws NotFoundException, FieldNullException, BadRequestException {
+		Reclamation result = reclamationService.updateReclamation(reclamation);
+		return new ResponseEntity<Reclamation>(result,HttpStatus.OK);
 	}
 
 	@DeleteMapping("/delete/{id}")
 	public ResponseEntity<Reclamation> deleteReclamation(@PathVariable Long id)
-			throws ReclamationException {
-		reclamationService.getById(id);
-		try {
-			reclamationService.deleteReclamation(id);
-		} catch (Exception e) {
-			return new ResponseEntity<Reclamation>(HttpStatus.NOT_FOUND);
-		}
+			throws NotFoundException {
+		reclamationService.deleteReclamation(id);
 		return new ResponseEntity<Reclamation>(HttpStatus.OK);
 	}
 }

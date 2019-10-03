@@ -9,7 +9,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import com.tenor.tsf.dao.entity.Departement;
 import com.tenor.tsf.dao.entity.User;
-import com.tenor.tsf.dao.exceptions.UserException;
+import com.tenor.tsf.dao.exceptions.FieldNullException;
+import com.tenor.tsf.dao.exceptions.NoContentException;
+import com.tenor.tsf.dao.exceptions.NotFoundException;
 
 @SpringBootTest
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -22,12 +24,12 @@ public class UserServiceTest {
 	Departement departement = new Departement();
 
 	@Test
-	public void testfindAll() {
+	public void testfindAll() throws NoContentException {
 		userService.findAll();
 	}
 
 	@Test
-	public void testCreateUser() throws UserException {
+	public void testCreateUser() throws FieldNullException, NotFoundException {
 		departement.setId(21L);
 		user.setNom("nom 1");
 		user.setPrenom("prenom 1");
@@ -40,8 +42,8 @@ public class UserServiceTest {
 	}
 
 	// Exception Id departement not found
-	@Test(expected = UserException.class)
-	public void testCreateExceptionIdDept() throws UserException {
+	@Test(expected = NotFoundException.class)
+	public void testCreateExceptionIdDept() throws FieldNullException, NotFoundException {
 		departement.setId(99L);
 		user.setNom("nom 1");
 		user.setPrenom("prenom 1");
@@ -54,8 +56,8 @@ public class UserServiceTest {
 	}
 
 	// Exception Nom null
-	@Test(expected = UserException.class)
-	public void testCreateExceptionNomNull() throws UserException {
+	@Test(expected = FieldNullException.class)
+	public void testCreateExceptionNomNull() throws FieldNullException, NotFoundException {
 		departement.setId(21L);
 		user.setPrenom("prenom 1");
 		user.setEmail("email 1");
@@ -67,8 +69,8 @@ public class UserServiceTest {
 	}
 
 	// Exception Prenom null
-	@Test(expected = UserException.class)
-	public void testCreateExceptionPrenomNull() throws UserException {
+	@Test(expected = FieldNullException.class)
+	public void testCreateExceptionPrenomNull() throws FieldNullException, NotFoundException {
 		departement.setId(21L);
 		user.setNom("nom 1");
 		user.setEmail("email 1");
@@ -80,7 +82,7 @@ public class UserServiceTest {
 	}
 
 	@Test
-	public void testUpdateUser() throws UserException {
+	public void testUpdateUser() throws NotFoundException, FieldNullException {
 		departement.setId(21L);
 		user.setId(11L);
 		user.setNom("fadil");
@@ -95,8 +97,8 @@ public class UserServiceTest {
 	}
 
 	//Exception id departement not found
-	@Test(expected = UserException.class)
-	public void testUpdateExceptionIdDept() throws UserException {
+	@Test(expected = NotFoundException.class)
+	public void testUpdateExceptionIdDept() throws NotFoundException, FieldNullException {
 		departement.setId(55L);
 		user.setId(11L);
 		user.setNom("fadil");
@@ -111,8 +113,8 @@ public class UserServiceTest {
 	}
 	
 	//Exception id User not found
-		@Test(expected = UserException.class)
-		public void testUpdateExceptionIdUser() throws UserException {
+		@Test(expected = NotFoundException.class)
+		public void testUpdateExceptionIdUser() throws NotFoundException, FieldNullException {
 			departement.setId(21L);
 			user.setId(66L);
 			user.setNom("fadil");
@@ -127,7 +129,7 @@ public class UserServiceTest {
 		}
 
 	@Test
-	public void testDeleteUser() throws UserException {
+	public void testDeleteUser() throws NotFoundException {
 		user.setId(17L);
 		Long id = user.getId();
 		userService.deleteUser(id);
@@ -136,8 +138,8 @@ public class UserServiceTest {
 	}
 
 	//Exception Id not found
-	@Test(expected = UserException.class)
-	public void nottestDeleteUser() throws UserException {
+	@Test(expected = NotFoundException.class)
+	public void nottestDeleteUser() throws NotFoundException {
 		user.setId(5L);
 		Long id = user.getId();
 		userService.deleteUser(id);

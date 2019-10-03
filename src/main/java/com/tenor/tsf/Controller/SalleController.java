@@ -13,7 +13,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.tenor.tsf.dao.entity.Salle;
-import com.tenor.tsf.dao.exceptions.SalleException;
+import com.tenor.tsf.dao.exceptions.FieldNullException;
+import com.tenor.tsf.dao.exceptions.NoContentException;
+import com.tenor.tsf.dao.exceptions.NotFoundException;
 import com.tenor.tsf.dao.services.SalleService;
 
 @RestController
@@ -24,46 +26,33 @@ public class SalleController {
 	private SalleService salleService;
 
 	@GetMapping(value = { "/salles" }, produces = "application/json")
-	public ResponseEntity<List<Salle>> getSalles() {
+	public ResponseEntity<List<Salle>> getSalles() throws NoContentException {
 		List<Salle> salles = salleService.findAll();
 		if (salles.isEmpty()) {
-			return new ResponseEntity<List<Salle>>(HttpStatus.NOT_FOUND);
+			return new ResponseEntity<List<Salle>>(HttpStatus.NO_CONTENT);
 		} else {
-			return new ResponseEntity<List<Salle>>(salleService.findAll(), HttpStatus.OK);
+			return new ResponseEntity<List<Salle>>(salles, HttpStatus.OK);
 		}
 	}
 
 	@PostMapping("/create")
 	public ResponseEntity<Salle> createSalle(@RequestBody Salle salle) 
-			throws SalleException {
-		try {
-			salleService.createSalle(salle);
-		} catch (Exception e) {
-			return new ResponseEntity<Salle>(HttpStatus.NOT_IMPLEMENTED);
-		}
-		return new ResponseEntity<Salle>(HttpStatus.CREATED);
+			throws FieldNullException {
+			Salle result = salleService.createSalle(salle);
+		return new ResponseEntity<Salle>(result,HttpStatus.CREATED);
 	}
 
 	@PutMapping("/update/{id}")
-	public ResponseEntity<Salle> updateSalle(@RequestBody Salle salle, @PathVariable Long id)
-			throws SalleException {
-		try {
-			salleService.updateSalle(salle);
-		} catch (Exception e) {
-			return new ResponseEntity<Salle>(HttpStatus.NOT_FOUND);
-		}
-		return new ResponseEntity<Salle>(HttpStatus.OK);
+	public ResponseEntity<Salle> updateSalle(@RequestBody Salle salle)
+			throws FieldNullException, NotFoundException {
+			Salle result = salleService.updateSalle(salle);
+		return new ResponseEntity<Salle>(result,HttpStatus.OK);
 	}
 
 	@DeleteMapping("/delete/{id}")
 	public ResponseEntity<Salle> deleteSalle(@PathVariable Long id) 
-			throws SalleException {
-		salleService.getById(id);
-		try {
+			throws NotFoundException {
 			salleService.deleteSalle(id);
-		} catch (Exception e) {
-			return new ResponseEntity<Salle>(HttpStatus.NOT_FOUND);
-		}
 		return new ResponseEntity<Salle>(HttpStatus.OK);
 	}
 }

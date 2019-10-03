@@ -13,7 +13,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.tenor.tsf.dao.entity.Departement;
-import com.tenor.tsf.dao.exceptions.DepartementException;
+import com.tenor.tsf.dao.exceptions.FieldNullException;
+import com.tenor.tsf.dao.exceptions.NoContentException;
+import com.tenor.tsf.dao.exceptions.NotFoundException;
 import com.tenor.tsf.dao.services.DepartementService;
 
 @RestController
@@ -24,48 +26,35 @@ public class DepartementController {
 	private DepartementService departementService;
 
 	@GetMapping(value = { "/departements" }, produces = "application/json")
-	public ResponseEntity<List<Departement>> getDepartements() {
+	public ResponseEntity<List<Departement>> getDepartements() throws NoContentException {
 		List<Departement> departements = departementService.findAll();
 		if (departements.isEmpty()) {
-			return new ResponseEntity<List<Departement>>(HttpStatus.NOT_FOUND);
+			return new ResponseEntity<List<Departement>>(HttpStatus.NO_CONTENT);
 		} else {
-			return new ResponseEntity<List<Departement>>(departementService.findAll(),
-					HttpStatus.OK);
+			return new ResponseEntity<List<Departement>>(departements, HttpStatus.OK);
 		}
 	}
 
 	@PostMapping("/create")
 	public ResponseEntity<Departement> createDepartement(@RequestBody Departement departement)
-			throws DepartementException {
-		try {
-			departementService.createDepartement(departement);
-		} catch (Exception e) {
-			return new ResponseEntity<Departement>(HttpStatus.NOT_IMPLEMENTED);
-		}
-		return new ResponseEntity<Departement>(HttpStatus.CREATED);
+			throws FieldNullException {
+		
+		Departement result = departementService.createDepartement(departement);
+		return new ResponseEntity<Departement>(result, HttpStatus.CREATED);
 	}
 
 	@PutMapping("/update/{id}")
-	public ResponseEntity<Departement> updateDepartement
-	(@RequestBody Departement departement, @PathVariable Long id)
-			throws DepartementException {
-		try {
-			departementService.updateDepartement(departement);
-		} catch (Exception e) {
-			return new ResponseEntity<Departement>(HttpStatus.NOT_FOUND);
-		}
-		return new ResponseEntity<Departement>(HttpStatus.OK);
+	public ResponseEntity<Departement> updateDepartement(@RequestBody Departement departement)
+			throws FieldNullException, NotFoundException {
+		
+			Departement result = departementService.updateDepartement(departement);
+		return new ResponseEntity<Departement>(result, HttpStatus.OK);
 	}
 
 	@DeleteMapping("/delete/{id}")
 	public ResponseEntity<Departement> deleteDepartement(@PathVariable Long id)
-			throws DepartementException {
-		departementService.getById(id);
-		try {
+			throws NotFoundException {
 			departementService.deleteDepartement(id);
-		} catch (Exception e) {
-			return new ResponseEntity<Departement>(HttpStatus.NOT_FOUND);
-		}
 		return new ResponseEntity<Departement>(HttpStatus.OK);
 	}
 

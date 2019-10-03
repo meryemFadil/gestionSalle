@@ -12,7 +12,10 @@ import com.tenor.tsf.dao.entity.Reclamation;
 import com.tenor.tsf.dao.entity.Salle;
 import com.tenor.tsf.dao.entity.Statut;
 import com.tenor.tsf.dao.entity.User;
-import com.tenor.tsf.dao.exceptions.ReclamationException;
+import com.tenor.tsf.dao.exceptions.BadRequestException;
+import com.tenor.tsf.dao.exceptions.FieldNullException;
+import com.tenor.tsf.dao.exceptions.NoContentException;
+import com.tenor.tsf.dao.exceptions.NotFoundException;
 
 @SpringBootTest
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -28,12 +31,12 @@ public class ReclamationServicesTest {
 	LocalDate date = LocalDate.now();
 
 	@Test
-	public void testfindAll() {
+	public void testfindAll() throws NoContentException {
 		reclamService.findAll();
 	}
 
 	@Test
-	public void testCreateReclamation() throws ReclamationException {
+	public void testCreateReclamation() throws BadRequestException, FieldNullException, NotFoundException {
 		user.setId(12L);
 		salle.setId(25L);
 		reclamation.setMessage("msg");
@@ -46,8 +49,8 @@ public class ReclamationServicesTest {
 	}
 
 	// Exception message null
-	@Test(expected = ReclamationException.class)
-	public void testCreateExceptionMsgNull() throws ReclamationException {
+	@Test(expected = FieldNullException.class)
+	public void testCreateExceptionMsgNull() throws BadRequestException, FieldNullException, NotFoundException {
 		user.setId(20L);
 		salle.setId(12L);
 		reclamation.setStatut(statut);
@@ -59,8 +62,8 @@ public class ReclamationServicesTest {
 	}
 
 	// Exception statut null
-	@Test(expected = ReclamationException.class)
-	public void testCreateExceptionStatutNull() throws ReclamationException {
+	@Test(expected = FieldNullException.class)
+	public void testCreateExceptionStatutNull() throws BadRequestException, FieldNullException, NotFoundException {
 		user.setId(20L);
 		salle.setId(12L);
 		reclamation.setMessage("message");
@@ -72,8 +75,8 @@ public class ReclamationServicesTest {
 	}
 
 	// Exception date
-	@Test(expected = ReclamationException.class)
-	public void testCreateExceptionDate() throws ReclamationException {
+	@Test(expected = BadRequestException.class)
+	public void testCreateExceptionDate() throws BadRequestException, FieldNullException, NotFoundException {
 		LocalDate date1 = LocalDate.of(2019, 7, 16);
 		user.setId(20L);
 		salle.setId(12L);
@@ -87,8 +90,8 @@ public class ReclamationServicesTest {
 	}
 
 	// Exception Id User not found
-	@Test(expected = ReclamationException.class)
-	public void testCreateExceptionIdUser() throws ReclamationException {
+	@Test(expected = NotFoundException.class)
+	public void testCreateExceptionIdUser() throws BadRequestException, FieldNullException, NotFoundException {
 		user.setId(300L);
 		salle.setId(12L);
 		reclamation.setMessage("message");
@@ -101,8 +104,8 @@ public class ReclamationServicesTest {
 	}
 
 	// Exception Id salle not found
-	@Test(expected = ReclamationException.class)
-	public void testCreateExceptionIdSalle() throws ReclamationException {
+	@Test(expected = NotFoundException.class)
+	public void testCreateExceptionIdSalle() throws BadRequestException, FieldNullException, NotFoundException {
 		user.setId(20L);
 		salle.setId(392L);
 		reclamation.setMessage("message");
@@ -115,7 +118,7 @@ public class ReclamationServicesTest {
 	}
 
 	@Test
-	public void testUpdateReclamation() throws ReclamationException {
+	public void testUpdateReclamation() throws BadRequestException, NotFoundException, FieldNullException {
 		user.setId(20L);
 		salle.setId(12L);
 		reclamation.setId(7L);
@@ -130,8 +133,8 @@ public class ReclamationServicesTest {
 	}
 
 	// Exception Id Reclamation not found
-	@Test(expected = ReclamationException.class)
-	public void testUpdateExceptionIdReclam() throws ReclamationException {
+	@Test(expected = NotFoundException.class)
+	public void testUpdateExceptionIdReclam() throws BadRequestException, NotFoundException, FieldNullException {
 		user.setId(20L);
 		salle.setId(12L);
 		reclamation.setId(77L);
@@ -146,7 +149,7 @@ public class ReclamationServicesTest {
 	}
 
 	@Test
-	public void testDeleteReclamation() throws ReclamationException {
+	public void testDeleteReclamation() throws NotFoundException {
 		reclamation.setId(6L);
 		Long id = reclamation.getId();
 		reclamService.deleteReclamation(id);
@@ -155,8 +158,8 @@ public class ReclamationServicesTest {
 	}
 
 	// Exception Id not found
-	@Test(expected = ReclamationException.class)
-	public void testDeleteExceptionId() throws ReclamationException {
+	@Test(expected = NotFoundException.class)
+	public void testDeleteExceptionId() throws NotFoundException {
 		reclamation.setId(521L);
 		Long id = reclamation.getId();
 		reclamService.deleteReclamation(id);

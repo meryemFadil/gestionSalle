@@ -1,37 +1,52 @@
 package com.tenor.tsf.dao.services;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.when;
 import java.util.Optional;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import com.tenor.tsf.Repository.SalleRepository;
 import com.tenor.tsf.dao.entity.Materiel;
 import com.tenor.tsf.dao.entity.Salle;
-import com.tenor.tsf.dao.exceptions.MaterielException;
-import com.tenor.tsf.dao.exceptions.SalleException;
+import com.tenor.tsf.dao.exceptions.FieldNullException;
+import com.tenor.tsf.dao.exceptions.NoContentException;
+import com.tenor.tsf.dao.exceptions.NotFoundException;
 
 @SpringBootTest
 @RunWith(SpringJUnit4ClassRunner.class)
 public class MaterielServiceTest {
 
-	Materiel materiel = new Materiel();
-	Materiel materiel1 = new Materiel();
+	private Materiel materiel = new Materiel();
+	private Materiel materiel1 = new Materiel();
 	@Autowired
-	MaterielService materielService;
-	@Autowired
-	SalleService salleService;
-	Salle salle = new Salle();
+	private MaterielService materielService;
+	private Salle salle = new Salle();
+	@Mock
+	private SalleRepository salleRepository;
+	
+	@Before
+	public void setUp() {
+		MockitoAnnotations.initMocks(this);
+	}
 
 	@Test
-	public void testfindAll() {
+	public void testfindAll() throws NoContentException {
 		materielService.findAll();
 	}
 
 	@Test
-	public void testcreateMateriel() throws MaterielException {
-		salle.setId(22L);
+	public void testcreateMateriel() throws NotFoundException, FieldNullException {
+		final Salle salle = new Salle();
+		salle.setId(1L);
+		salle.setCapacite(50L);
+		salle.setLibelle("libelle");
+		when(salleRepository.findById(1L).get()).thenReturn(salle);
 		materiel.setLibelle("libelle 1");
 		materiel.setCategorie("categorie 1");
 		materiel.setSalle(salle);
@@ -40,9 +55,9 @@ public class MaterielServiceTest {
 	}
 
 	// Exception libelle null
-	@Test(expected = MaterielException.class)
-	public void testcreateExceptionLibelle() throws MaterielException {
-		salle.setId(22L);
+	@Test(expected = FieldNullException.class)
+	public void testcreateExceptionLibelle() throws NotFoundException, FieldNullException {
+		salle.setId(1L);
 		materiel.setCategorie("categorie 1");
 		materiel.setSalle(salle);
 		materiel1 = materielService.createMateriel(materiel);
@@ -50,9 +65,9 @@ public class MaterielServiceTest {
 	}
 
 	// Exception categorie null
-	@Test(expected = MaterielException.class)
-	public void testcreateExceptionCategorie() throws MaterielException {
-		salle.setId(22L);
+	@Test(expected = FieldNullException.class)
+	public void testcreateExceptionCategorie() throws NotFoundException, FieldNullException {
+		salle.setId(1L);
 		materiel.setLibelle("libelle");
 		materiel.setSalle(salle);
 		materiel1 = materielService.createMateriel(materiel);
@@ -60,8 +75,8 @@ public class MaterielServiceTest {
 	}
 
 	@Test
-	public void testUpdateMateriel() throws MaterielException {
-		salle.setId(20L);
+	public void testUpdateMateriel() throws FieldNullException, NotFoundException {
+		salle.setId(1L);
 		materiel.setId(2L);
 		materiel.setLibelle("libelle 4");
 		materiel.setCategorie("categorie 4");
@@ -72,9 +87,9 @@ public class MaterielServiceTest {
 	}
 
 	// Exception salle Id not found
-	@Test(expected = MaterielException.class)
+	@Test(expected = NotFoundException.class)
 	public void nottestUpdateExceptionIdSalle()
-			throws MaterielException, SalleException {
+			throws FieldNullException, NotFoundException {
 		salle.setId(123L);
 		materiel.setId(2L);
 		materiel.setLibelle("libelle 4");
@@ -86,10 +101,10 @@ public class MaterielServiceTest {
 	}
 
 	// Exception materiel Id not found
-	@Test(expected = MaterielException.class)
+	@Test(expected = NotFoundException.class)
 	public void testUpdateExceptionIdMateriel()
-			throws MaterielException, SalleException {
-		salle.setId(20L);
+			throws FieldNullException, NotFoundException {
+		salle.setId(1L);
 		materiel.setId(193L);
 		materiel.setLibelle("libelle 4");
 		materiel.setCategorie("categorie 4");
@@ -100,10 +115,10 @@ public class MaterielServiceTest {
 	}
 
 	// Exception Libelle null
-	@Test(expected = MaterielException.class)
+	@Test(expected = FieldNullException.class)
 	public void testUpdateExceptionLibelleNull()
-			throws MaterielException, SalleException {
-		salle.setId(20L);
+			throws FieldNullException, NotFoundException {
+		salle.setId(1L);
 		materiel.setId(2L);
 		materiel.setCategorie("categorie 4");
 		materiel.setSalle(salle);
@@ -113,10 +128,10 @@ public class MaterielServiceTest {
 	}
 
 	// Exception categorie null
-	@Test(expected = MaterielException.class)
+	@Test(expected = FieldNullException.class)
 	public void testUpdateExceptionCategorieNull()
-			throws MaterielException, SalleException {
-		salle.setId(20L);
+			throws FieldNullException, NotFoundException {
+		salle.setId(1L);
 		materiel.setId(2L);
 		materiel.setLibelle("libelle");
 		materiel.setSalle(salle);
@@ -126,7 +141,7 @@ public class MaterielServiceTest {
 	}
 
 	@Test
-	public void testDeleteMateriel() throws MaterielException {
+	public void testDeleteMateriel() throws NotFoundException {
 		materiel.setId(2L);
 		Long id = materiel.getId();
 		materielService.deleteMateriel(id);
@@ -135,8 +150,8 @@ public class MaterielServiceTest {
 	}
 
 	//Exception Id not found
-	@Test(expected = MaterielException.class)
-	public void testDeleteExceptionId() throws MaterielException {
+	@Test(expected = NotFoundException.class)
+	public void testDeleteExceptionId() throws NotFoundException {
 		materiel.setId(60L);
 		Long id = materiel.getId();
 		materielService.deleteMateriel(id);

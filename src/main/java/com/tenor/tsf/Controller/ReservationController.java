@@ -13,7 +13,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.tenor.tsf.dao.entity.Reservation;
-import com.tenor.tsf.dao.exceptions.ReservationException;
+import com.tenor.tsf.dao.exceptions.BadRequestException;
+import com.tenor.tsf.dao.exceptions.NoContentException;
+import com.tenor.tsf.dao.exceptions.NotFoundException;
 import com.tenor.tsf.dao.services.ReservationService;
 
 @RestController
@@ -24,48 +26,33 @@ public class ReservationController {
 	private ReservationService reservationService;
 
 	@GetMapping(value = { "/reservations" }, produces = "application/json")
-	public ResponseEntity<List<Reservation>> getReservations() throws ReservationException {
+	public ResponseEntity<List<Reservation>> getReservations() throws NoContentException {
 		List<Reservation> reservations = reservationService.findAll();
 		if (reservations.isEmpty()) {
-			return new ResponseEntity<List<Reservation>>(HttpStatus.NOT_FOUND);
+			return new ResponseEntity<List<Reservation>>(HttpStatus.NO_CONTENT);
 		} else {
-			return new ResponseEntity<List<Reservation>>(reservationService.findAll(),
-					HttpStatus.OK);
+			return new ResponseEntity<List<Reservation>>(reservations,HttpStatus.OK);
 		}
 	}
 
 	@PostMapping("/create")
 	public ResponseEntity<Reservation> createReservation(@RequestBody Reservation reservation)
-			throws ReservationException {
-		try {
-			reservationService.createReservation(reservation);
-		} catch (Exception e) {
-			return new ResponseEntity<Reservation>(HttpStatus.NOT_IMPLEMENTED);
-		}
-		return new ResponseEntity<Reservation>(HttpStatus.CREATED);
+			throws BadRequestException, NotFoundException {
+			Reservation result = reservationService.createReservation(reservation);
+		return new ResponseEntity<Reservation>(result,HttpStatus.CREATED);
 	}
 
 	@PutMapping("/update/{id}")
-	public ResponseEntity<Reservation> updateReservation
-	(@RequestBody Reservation reservation, @PathVariable Long id)
-			throws ReservationException {
-		try {
-			reservationService.updateReservation(reservation);
-		} catch (Exception e) {
-			return new ResponseEntity<Reservation>(HttpStatus.NOT_FOUND);
-		}
-		return new ResponseEntity<Reservation>(HttpStatus.OK);
+	public ResponseEntity<Reservation> updateReservation(@RequestBody Reservation reservation)
+			throws NotFoundException, BadRequestException {
+		Reservation result = reservationService.updateReservation(reservation);
+		return new ResponseEntity<Reservation>(result,HttpStatus.OK);
 	}
 
 	@DeleteMapping("/delete/{id}")
 	public ResponseEntity<Reservation> deleteReservation(@PathVariable Long id)
-			throws ReservationException {
-		reservationService.getById(id);
-		try {
+			throws NotFoundException {
 			reservationService.deleteReservation(id);
-		} catch (Exception e) {
-			return new ResponseEntity<Reservation>(HttpStatus.NOT_FOUND);
-		}
 		return new ResponseEntity<Reservation>(HttpStatus.OK);
 	}
 }

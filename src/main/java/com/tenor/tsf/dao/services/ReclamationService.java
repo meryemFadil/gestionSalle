@@ -10,7 +10,12 @@ import com.tenor.tsf.Repository.ReclamationRepository;
 import com.tenor.tsf.Repository.SalleRepository;
 import com.tenor.tsf.Repository.UserRepository;
 import com.tenor.tsf.dao.entity.Reclamation;
-import com.tenor.tsf.dao.exceptions.ReclamationException;
+import com.tenor.tsf.dao.entity.Salle;
+import com.tenor.tsf.dao.entity.User;
+import com.tenor.tsf.dao.exceptions.BadRequestException;
+import com.tenor.tsf.dao.exceptions.FieldNullException;
+import com.tenor.tsf.dao.exceptions.NoContentException;
+import com.tenor.tsf.dao.exceptions.NotFoundException;
 import lombok.extern.log4j.Log4j2;
 
 @Log4j2
@@ -25,55 +30,61 @@ public class ReclamationService {
 	UserRepository userRepository;
 	LocalDate date = LocalDate.now();
 
-	public List<Reclamation> findAll() {
+	public List<Reclamation> findAll() throws NoContentException {
 		return (List<Reclamation>) reclamationRepository.findAll();
 	}
 
 	public Reclamation createReclamation(Reclamation reclamation) 
-			throws ReclamationException {
+			throws BadRequestException, FieldNullException, NotFoundException {
 		Validate.notNull(reclamation, "Reclamation cannot be null!");
 		log.info("Create: "+reclamation);
+		Optional<Salle> salleFindById = salleRepository.findById(reclamation.getSalle().getId());
+		Optional<User> userFindById = userRepository.findById(reclamation.getUser().getId());
 		if (reclamation.getMessage() == null) {
-			throw new ReclamationException("The message field can not be null!");
+			throw new FieldNullException("The message field can not be null!");
 		} else if (reclamation.getStatut() == null) {
-			throw new ReclamationException("the field statut can not be null!");
+			throw new FieldNullException("the field statut can not be null!");
 		} else if (!reclamation.getDate().equals(date)) {
-			throw new ReclamationException("The date of the reclamation must be today!");
-		} else if (!salleRepository.findById(reclamation.getSalle().getId()).isPresent()) {
-			throw new ReclamationException("Salle not found!");
-		} else if (!userRepository.findById(reclamation.getUser().getId()).isPresent()) {
-			throw new ReclamationException("User not found!");
+			throw new BadRequestException("The date of the reclamation must be today!");
+		} else if (!salleFindById.isPresent()) {
+			throw new NotFoundException("Salle not found!");
+		} else if (!userFindById.isPresent()) {
+			throw new NotFoundException("User not found!");
 		} else {
 			return reclamationRepository.save(reclamation);
 		}
 	}
 
 	public Reclamation updateReclamation(Reclamation reclamation) 
-			throws ReclamationException {
+			throws BadRequestException, NotFoundException, FieldNullException {
 		Validate.notNull(reclamation, "Reclamation cannot be null!");
 		log.info("Update: "+reclamation);
+		Optional<Salle> salleFindById = salleRepository.findById(reclamation.getSalle().getId());
+		Optional<User> userFindById = userRepository.findById(reclamation.getUser().getId());
+		Optional<Reclamation> reclamationFindById = reclamationRepository.findById(reclamation.getId());
 		if (reclamation.getMessage() == null) {
-			throw new ReclamationException("the field statut can not be null!");
+			throw new FieldNullException("the field statut can not be null!");
 		} else if (reclamation.getStatut() == null) {
-			throw new ReclamationException("the field statut can not be null!");
+			throw new FieldNullException("the field statut can not be null!");
 		} else if (!reclamation.getDate().equals(date)) {
-			throw new ReclamationException("The date of the reclamation must be today!");
-		} else if (!salleRepository.findById(reclamation.getSalle().getId()).isPresent()) {
-			throw new ReclamationException("Salle not found!");
-		} else if (!userRepository.findById(reclamation.getUser().getId()).isPresent()) {
-			throw new ReclamationException("User not found!");
-		} else if (!reclamationRepository.findById(reclamation.getId()).isPresent()) {
-			throw new ReclamationException("reclamation not found!");
+			throw new BadRequestException("The date of the reclamation must be today!");
+		} else if (!salleFindById.isPresent()) {
+			throw new NotFoundException("Salle not found!");
+		} else if (!userFindById.isPresent()) {
+			throw new NotFoundException("User not found!");
+		} else if (!reclamationFindById.isPresent()) {
+			throw new NotFoundException("reclamation not found!");
 		} else {
 			return reclamationRepository.save(reclamation);
 		}
 	}
 
-	public void deleteReclamation(Long id) throws ReclamationException {
+	public void deleteReclamation(Long id) throws NotFoundException {
 		Validate.notNull(id, "The id cannot be null!");
 		log.info("delete: "+id);
-		if (!reclamationRepository.findById(id).isPresent()) {
-			throw new ReclamationException("Reclamation not found!");
+		Optional<Reclamation> reclamationFindById = reclamationRepository.findById(id);
+		if (!reclamationFindById.isPresent()) {
+			throw new NotFoundException("Reclamation not found!");
 		} else {
 			reclamationRepository.deleteById(id);
 		}

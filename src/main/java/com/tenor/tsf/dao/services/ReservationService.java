@@ -11,7 +11,11 @@ import com.tenor.tsf.Repository.ReservationRepository;
 import com.tenor.tsf.Repository.SalleRepository;
 import com.tenor.tsf.Repository.UserRepository;
 import com.tenor.tsf.dao.entity.Reservation;
-import com.tenor.tsf.dao.exceptions.ReservationException;
+import com.tenor.tsf.dao.entity.Salle;
+import com.tenor.tsf.dao.entity.User;
+import com.tenor.tsf.dao.exceptions.BadRequestException;
+import com.tenor.tsf.dao.exceptions.NoContentException;
+import com.tenor.tsf.dao.exceptions.NotFoundException;
 import lombok.extern.log4j.Log4j2;
 
 @Log4j2
@@ -28,54 +32,55 @@ public class ReservationService {
 	LocalTime heureDeb = LocalTime.now();
 	LocalTime heureFin;
 
-	public List<Reservation> findAll() throws ReservationException {
-		if(reservationRepository.findAll()==null) {
-			throw new ReservationException("The reservation list is empty!");
-		}
+	public List<Reservation> findAll() throws NoContentException {
 		return (List<Reservation>) reservationRepository.findAll();
 	}
 
 	public Reservation createReservation(Reservation reservation) 
-			throws ReservationException {
+			throws BadRequestException, NotFoundException {
 		Validate.notNull(reservation, "Reservation could not be null!");
 		log.info("Create: "+reservation);
+		Optional<Salle> salleFindById = salleRepository.findById(reservation.getSalle().getId());
+		Optional<User> userFindById = userRepository.findById(reservation.getUtilisateur().getId());
 		if (reservation.getDate().isBefore(date)) {
-			throw new ReservationException("The date must be greater than now!");
+			throw new BadRequestException("The date must be greater than now!");
 		} else if (reservation.getHeureDeb().isBefore(heureDeb)) {
-			throw new ReservationException("The start time must be higher than now!");
+			throw new BadRequestException("The start time must be higher than now!");
 		} else if (reservation.getHeureFin().isBefore(reservation.getHeureDeb())) {
-			throw new ReservationException("The end time must be greater than the start time!");
+			throw new BadRequestException("The end time must be greater than the start time!");
 		} else if (reservation.getHeureDeb() == reservation.getHeureFin()) {
-			throw new ReservationException( "The start time should not be equal to the end time!");
+			throw new BadRequestException( "The start time should not be equal to the end time!");
 		} else if (!salleDispo(reservation)) {
-			throw new ReservationException("This room is not available!");
-		} else if (!salleRepository.findById(reservation.getSalle().getId()).isPresent()) {
-			throw new ReservationException("room not found!");
-		} else if (!userRepository.findById(reservation.getUtilisateur().getId()).isPresent()) {
-			throw new ReservationException("User not found!");
+			throw new BadRequestException("This room is not available!");
+		} else if (!salleFindById.isPresent()) {
+			throw new NotFoundException("room not found!");
+		} else if (!userFindById.isPresent()) {
+			throw new NotFoundException("User not found!");
 		} else {
 			return reservationRepository.save(reservation);
 		}
 	}
 
-	public void updateReservation(Reservation reservation) 
-			throws ReservationException {
+	public Reservation updateReservation(Reservation reservation) 
+			throws NotFoundException, BadRequestException {
 		Validate.notNull(reservation, "Reservation could not be null");
 		log.info("Update: "+reservation);
-		if (!reservationRepository.findById(reservation.getId()).isPresent()) {
-			throw new ReservationException("Reservation not found!");
+		Optional<Reservation> reservationFindById = reservationRepository.findById(reservation.getId());
+		if (!reservationFindById.isPresent()) {
+			throw new NotFoundException("Reservation not found!");
 		} else if (!salleDispo(reservation)) {
-			throw new ReservationException("This room is not available!");
+			throw new BadRequestException("This room is not available!");
 		} else {
-			reservationRepository.save(reservation);
+			return reservationRepository.save(reservation);
 		}
 	}
 
-	public void deleteReservation(long id) throws ReservationException {
+	public void deleteReservation(long id) throws NotFoundException {
 		Validate.notNull(id,"Id cannot be null");
 		log.info("Delete: "+id);
-		if (!reservationRepository.findById(id).isPresent()) {
-			throw new ReservationException("Reservation not found!");
+		Optional<Reservation> reservationFindById = reservationRepository.findById(id);
+		if (!reservationFindById.isPresent()) {
+			throw new NotFoundException("Reservation not found!");
 		} else {
 			reservationRepository.deleteById(id);
 		}

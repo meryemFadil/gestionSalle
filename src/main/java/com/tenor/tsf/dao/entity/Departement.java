@@ -10,9 +10,11 @@ import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import lombok.Data;
+import lombok.ToString;
 
 @Entity
 @Data
+@ToString
 @Table(name = "departement")
 public class Departement implements Serializable {
 	
@@ -24,10 +26,5 @@ public class Departement implements Serializable {
 	@OneToMany
     private final List<User> users = new ArrayList<User>();
 	
-	
-	@Override
-	public String toString() {
-		return "Departement [id=" + id + ", nom=" + nom + ", users=" + users + "]";
-	}
 
 }

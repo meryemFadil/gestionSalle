@@ -9,7 +9,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.tenor.tsf.Repository.DepartementRepository;
 import com.tenor.tsf.dao.entity.Departement;
-import com.tenor.tsf.dao.exceptions.DepartementException;
+import com.tenor.tsf.dao.exceptions.FieldNullException;
+import com.tenor.tsf.dao.exceptions.NoContentException;
+import com.tenor.tsf.dao.exceptions.NotFoundException;
 
 @Service
 public class DepartementService {
@@ -18,39 +20,41 @@ public class DepartementService {
 	private DepartementRepository departementRepository;
 	public final Logger logger = LogManager.getLogger(DepartementService.class);
 
-	public List<Departement> findAll() {
+	public List<Departement> findAll() throws NoContentException {
 		return (List<Departement>) departementRepository.findAll();
 	}
 
 	public Departement createDepartement(Departement departement) 
-			throws DepartementException {
+			throws FieldNullException {
 		Validate.notNull(departement, "Departement cannot be null!");
 		logger.info("Create:  " + departement);
-		if (departement.getNom().isEmpty() || departement.getNom() == null) {
-			throw new DepartementException("Name of departement cannot be null");
+		if (departement.getNom() == null || departement.getNom().isEmpty()) {
+			throw new FieldNullException("Name of departement cannot be null");
 		} else {
 			return departementRepository.save(departement);
 		}
 	}
 
 	public Departement updateDepartement(Departement departement) 
-			throws DepartementException {
+			throws FieldNullException, NotFoundException {
 		Validate.notNull(departement, "Departement cannot be null!");
 		logger.info("Update:  " + departement);
-		if (departement.getNom().isEmpty() || departement.getNom() == null) {
-			throw new DepartementException("name of departement cannot be null");
-		} else if (!departementRepository.findById(departement.getId()).isPresent()) {
-			throw new DepartementException("Departement not found!");
+		Optional<Departement> departementFindById = departementRepository.findById(departement.getId());
+		if (departement.getNom() == null || departement.getNom().isEmpty()) {
+			throw new FieldNullException("name of departement cannot be null");
+		} else if (!departementFindById.isPresent()) {
+			throw new NotFoundException("Departement not found!");
 		} else {
 			return departementRepository.save(departement);
 		}
 	}
 
-	public void deleteDepartement(Long id) throws DepartementException {
+	public void deleteDepartement(Long id) throws NotFoundException {
 		Validate.notNull(id, "Id cannot be null!");
 		logger.info("Delete Id:  " + id);
-		if (!departementRepository.findById(id).isPresent()) {
-			throw new DepartementException("Departement not found!");
+		Optional<Departement> departementFindById = departementRepository.findById(id);
+		if (!departementFindById.isPresent()) {
+			throw new NotFoundException("Departement not found!");
 		} else {
 			departementRepository.deleteById(id);
 		}
