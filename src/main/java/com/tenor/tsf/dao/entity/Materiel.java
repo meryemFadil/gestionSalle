@@ -8,8 +8,10 @@ import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import lombok.Data;
+import lombok.ToString;
 
 @Data
+@ToString
 @Entity
 @Table(name = "materiel")
 public class Materiel implements Serializable{
@@ -23,11 +25,7 @@ public class Materiel implements Serializable{
      @ManyToOne
 	 private Salle salle;
 	 
-	 
-	@Override
-	public String toString() {
-		return "Materiel [id=" + id + ", libelle=" + libelle + ", categorie=" + categorie + ", salle=" + salle + "]";
-	}
+	
 	 
 	
 	

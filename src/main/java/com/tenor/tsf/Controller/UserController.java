@@ -36,21 +36,20 @@ public class UserController {
 	}
 
 	@PostMapping("/create")
-	public ResponseEntity<User> createUser(@RequestBody User user) 
-			throws FieldNullException, NotFoundException {
-			User result = userService.createUser(user);
-		return new ResponseEntity<User>(result,HttpStatus.CREATED);
+	public ResponseEntity<User> createUser(@RequestBody User user) throws FieldNullException, NotFoundException {
+		User result = userService.createUser(user);
+		return new ResponseEntity<User>(result, HttpStatus.CREATED);
 	}
 
 	@PutMapping("/update/{id}")
-	public ResponseEntity<User> updateUser(@RequestBody User user)throws NotFoundException, FieldNullException {
+	public ResponseEntity<User> updateUser(@RequestBody User user) throws NotFoundException, FieldNullException {
 		User result = userService.updateUser(user);
-		return new ResponseEntity<User>(result,HttpStatus.OK);
+		return new ResponseEntity<User>(result, HttpStatus.OK);
 	}
 
 	@DeleteMapping("/delete/{id}")
 	public ResponseEntity<User> deleteUser(@PathVariable Long id) throws NotFoundException {
-			userService.deleteUser(id);
+		userService.deleteUser(id);
 		return new ResponseEntity<User>(HttpStatus.OK);
 	}
 }
